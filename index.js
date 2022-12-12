@@ -1,6 +1,6 @@
 const chalk = require("chalk");
 const path = require('path');
-const {addNote, getNotes} = require("./notes.controller");
+const {addNote, getNotes, remove} = require("./notes.controller");
 const express = require('express');
 
 const basePath = path.join(__dirname, 'pages');
@@ -17,7 +17,8 @@ app.use(express.urlencoded({
 app.get('/', async (req, res) => {
     res.render('index', {
         title: 'Note app',
-        notes: await getNotes()
+        notes: await getNotes(),
+        created: false
     });
 });
 
@@ -25,9 +26,20 @@ app.post('/', async (req, res) => {
     await addNote(req.body?.title);
     res.render('index', {
         title: 'Note app',
-        notes: await getNotes()
+        notes: await getNotes(),
+        created: true
     });
-})
+});
+
+app.delete('/:id', async (req, res) => {
+    await remove(req.params.id);
+    res.render('index', {
+        title: 'Note app',
+        notes: await getNotes(),
+        created: false
+    });
+});
+
 app.listen(port, () => {
     console.log(chalk.green(`Server has been started on port ${port}`));
 })
