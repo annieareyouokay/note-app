@@ -1,45 +1,33 @@
-const yargs = require('yargs');
-const pkg = require('./package.json');
-const { addNote, printNotes, remove } = require('./notes.controller');
+const chalk = require("chalk");
+const path = require('path');
+const {addNote, getNotes} = require("./notes.controller");
+const express = require('express');
 
-yargs.version(pkg.version);
+const basePath = path.join(__dirname, 'pages');
+const port = 3000;
+const app = express();
 
-yargs.command({
-    command: 'add',
-    describe: 'add new note to list',
-    builder: {
-        title: {
-            type: 'string',
-            describe: 'Note title',
-            demandOption: true
-        }
-    },
-    async handler({ title }) {
-        await addNote(title);
-    }
+app.use(express.static(path.resolve(__dirname, 'public')));
+app.set('views', 'pages');
+app.set('view engine', 'ejs')
+app.use(express.urlencoded({
+    extended: true
+}));
+
+app.get('/', async (req, res) => {
+    res.render('index', {
+        title: 'Note app',
+        notes: await getNotes()
+    });
 });
 
-yargs.command({
-    command: 'list',
-    describe: 'print all notes',
-    async handler() {
-        await printNotes();
-    }
-});
-
-yargs.command({
-    command: 'remove',
-    describe: 'remove note by id',
-    builder: {
-        id: {
-            type: 'string',
-            describe: 'note id',
-            demandOption: true
-        }
-    },
-    async handler({ id }) {
-        await remove(id);
-    }
-});
-
-yargs.parse();
+app.post('/', async (req, res) => {
+    await addNote(req.body?.title);
+    res.render('index', {
+        title: 'Note app',
+        notes: await getNotes()
+    });
+})
+app.listen(port, () => {
+    console.log(chalk.green(`Server has been started on port ${port}`));
+})
