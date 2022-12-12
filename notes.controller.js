@@ -38,6 +38,18 @@ async function remove(id) {
     console.log(chalk.yellowBright('Note removed'));
 }
 
+async function edit({id, title}) {
+    const notes = await getNotes();
+    const newNotes = notes.map(n => {
+        if (n.id === id) {
+            return { id, title};
+        }
+        return  n;
+    });
+    await fs.writeFile(notesPath, JSON.stringify(newNotes));
+    console.log(chalk.blackBright('Note edited'));
+}
+
 module.exports = {
-    addNote, getNotes, printNotes, remove
+    addNote, getNotes, printNotes, remove, edit
 }
